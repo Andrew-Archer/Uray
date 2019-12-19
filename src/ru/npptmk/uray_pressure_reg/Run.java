@@ -1,40 +1,35 @@
 package ru.npptmk.uray_pressure_reg;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.InetAddress;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import static javax.swing.JOptionPane.ERROR_MESSAGE;
 import org.apache.derby.drda.NetworkServerControl;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.StandardChartTheme;
-import ru.npptmk.drivers.manometers.DriverForDM5002M;
-import ru.npptmk.tubescontrollsystem.drivers.Controller;
-import ru.npptmk.tubescontrollsystem.drivers.ControllerS7;
-import ru.npptmk.tubescontrollsystem.drivers.DBHandlerImpl;
-import ru.npptmk.tubescontrollsystem.gui.JDialog_SetupIndicator;
-import ru.npptmk.tubescontrollsystem.gui.JFrame_Main;
-import ru.npptmk.tubescontrollsystem.managers.ShiftManagerImpl;
-import ru.npptmk.tubescontrollsystem.managers.TubesRelocator;
-import ru.npptmk.tubescontrollsystem.model.Tube;
+import ru.npptmk.uray_pressure_reg.drivers.DBExecutor;
+import ru.npptmk.uray_pressure_reg.drivers.DerbyDBExecutor;
+import ru.npptmk.uray_pressure_reg.gui.JDialog_SetupIndicator;
+import ru.npptmk.uray_pressure_reg.gui.JFrame_Main;
 
 /**
  * Класс для запуска программы в реальных условиях у заказчика.
  *
  * @author RazumnovAA
  */
-public class RunTubesControllSystem {
+public class Run {
 
-    private static final Logger logger = LogManager.getLogger("HelloWorld");
+    private static final Logger logger = Logger.getLogger("HelloWorld");
 
-    public static void main(String[] args) throws InterruptedException {
-        //System.setProperty("log4j.configurationFile", "C:\\log4j.properties");
+    public static void main(String[] args) throws InterruptedException, IOException {
         JDialog_SetupIndicator indication = new JDialog_SetupIndicator(null, false);
-        indication.setMaxValueForProgress(6);
+        indication.setMaxValueForProgress(2);
         indication.dropProgress();
         indication.setVisible(true);
-        System.setProperty("derby.system.home", System.getProperty("user.home"));
+        //LogManager.getLogManager().readConfiguration(new FileInputStream("logger.properties"));
+        System.setProperty("derby.system.home", "db");
         System.out.printf("derby.system.home = %s%n", System.getProperty("user.home"));
         System.setProperty("java.net.preferIPv4Stack", "true");
         //Устанавливает старую тему при запуске для JFreeCharts,
@@ -50,9 +45,10 @@ public class RunTubesControllSystem {
             indication.incremetProgress();
 
             indication.printlnLog("Подключаемся к базе данных");
-            final DBHandlerImpl dbHandler = new DBHandlerImpl("TestTubesControllSystemPU");
+            final DBExecutor dbExecutor = DerbyDBExecutor.getExecutor("UrayPressureRegistrationPU");
             indication.incremetProgress();
 
+            /*
             indication.printlnLog("Подключаемся к манометру");
             final DriverForDM5002M manometer = new DriverForDM5002M("/dev/ttyS2");
             indication.incremetProgress();
@@ -67,16 +63,11 @@ public class RunTubesControllSystem {
 
             indication.printlnLog("Подключаемся к контроллеру");
             final Controller controller = new ControllerS7("localhost", 502);
-            indication.incremetProgress();
+            indication.incremetProgress();*/
             indication.setVisible(false);
             /* Create and display the form */
             java.awt.EventQueue.invokeLater(() -> {
-                new JFrame_Main(
-                        manometer,
-                        controller,
-                        dbHandler,
-                        shiftManager,
-                        tubesRelocator)
+                new JFrame_Main()
                         .setVisible(true);
             });
         } catch (Exception ex) {
