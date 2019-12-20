@@ -1,21 +1,72 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package ru.npptmk.uray_pressure_reg.gui;
+
+import javax.swing.JOptionPane;
+import static javax.swing.JOptionPane.ERROR_MESSAGE;
+import ru.npptmk.drivers.manometers.Manometer;
+import ru.npptmk.drivers.manometers.Manometer.ManometerConnectionStateListener;
+import ru.npptmk.drivers.manometers.Manometer.ManometerListener;
+import ru.npptmk.uray_pressure_reg.drivers.DBExecutor;
+import ru.npptmk.uray_pressure_reg.managers.ShiftManager;
+import ru.npptmk.uray_pressure_reg.managers.ShiftManagerListener;
+import ru.npptmk.uray_pressure_reg.model.Shift;
+import ru.npptmk.uray_pressure_reg.model.ShiftState;
 
 /**
  *
  * @author RazumnovAA
  */
-public class JFrame_Main extends javax.swing.JFrame {
+public class JFrame_Main extends javax.swing.JFrame
+        implements ManometerConnectionStateListener,
+        ManometerListener,
+        ShiftManagerListener {
+
+    private final DBExecutor dbExecutor;
+    private final Manometer man1;
+    private final Manometer man2;
+    private final ShiftManager shiftManager;
 
     /**
      * Creates new form JFrame_Main
+     *
+     * @param dbExecutor
+     * @param man1
+     * @param man2
+     * @param shiftManager
      */
-    public JFrame_Main() {
+    public JFrame_Main(
+            DBExecutor dbExecutor,
+            Manometer man1,
+            Manometer man2,
+            ShiftManager shiftManager) {
+
         initComponents();
+        this.dbExecutor = dbExecutor;
+        this.shiftManager = shiftManager;
+        shiftManager.addListener(this);
+        this.man1 = man1;
+        man1.addListener(this);
+        this.man2 = man2;
+        man2.addManometerConnectionStateListener(this);
+    }
+
+    @Override
+    public void doOnManometerConnectionStateChanged(Manometer man, Boolean connectionState) {
+
+    }
+
+    @Override
+    public void doOnPressureValueChanged(Manometer man, Float prevValue, Float currentValue, Long milliSeconds) {
+
+    }
+
+    @Override
+    public void doOnShiftChaned(Shift shift) {
+        jLabel_ShiftState.setText(shift.getState().toString());
+        if (shift.getState().equals(ShiftState.RUNNING)) {
+            jButton_SwitchShiftState.setText("Завершить");
+        } else {
+            jButton_SwitchShiftState.setText("Начать");
+        }
     }
 
     /**
@@ -27,21 +78,104 @@ public class JFrame_Main extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jPanel_Shift = new javax.swing.JPanel();
+        jLabel_ShiftState = new javax.swing.JLabel();
+        jButton_SwitchShiftState = new javax.swing.JButton();
+        jPanel_PressureTest1 = new ru.npptmk.uray_pressure_reg.gui.JPanel_PressureTest();
+        jButton1 = new javax.swing.JButton();
+
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        jPanel_Shift.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Смена", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 14))); // NOI18N
+
+        jLabel_ShiftState.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
+        jLabel_ShiftState.setBorder(javax.swing.BorderFactory.createTitledBorder("Состояние"));
+
+        jButton_SwitchShiftState.setText("Начать");
+        jButton_SwitchShiftState.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton_SwitchShiftStateActionPerformed(evt);
+            }
+        });
+
+        jButton1.setText("jButton1");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel_ShiftLayout = new javax.swing.GroupLayout(jPanel_Shift);
+        jPanel_Shift.setLayout(jPanel_ShiftLayout);
+        jPanel_ShiftLayout.setHorizontalGroup(
+            jPanel_ShiftLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel_ShiftLayout.createSequentialGroup()
+                .addComponent(jLabel_ShiftState, javax.swing.GroupLayout.PREFERRED_SIZE, 165, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel_ShiftLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jButton_SwitchShiftState)
+                    .addComponent(jButton1))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel_PressureTest1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE))
+        );
+        jPanel_ShiftLayout.setVerticalGroup(
+            jPanel_ShiftLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel_ShiftLayout.createSequentialGroup()
+                .addGap(0, 0, Short.MAX_VALUE)
+                .addComponent(jButton1)
+                .addGap(166, 166, 166)
+                .addComponent(jButton_SwitchShiftState, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addComponent(jLabel_ShiftState, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel_ShiftLayout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jPanel_PressureTest1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(jPanel_Shift, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(jPanel_Shift, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void jButton_SwitchShiftStateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton_SwitchShiftStateActionPerformed
+        if (shiftManager.getState().equals(ShiftState.RUNNING)) {
+            try {
+                shiftManager.endShift();
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, ex, "ERROR", ERROR_MESSAGE);
+            }
+        } else {
+            try {
+                shiftManager.startShift(null);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, ex, "ERROR", ERROR_MESSAGE);
+            }
+        }
+    }//GEN-LAST:event_jButton_SwitchShiftStateActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        jPanel_PressureTest1.addPoint(1f, 1f);
+    }//GEN-LAST:event_jButton1ActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton_SwitchShiftState;
+    private javax.swing.JLabel jLabel_ShiftState;
+    private ru.npptmk.uray_pressure_reg.gui.JPanel_PressureTest jPanel_PressureTest1;
+    private javax.swing.JPanel jPanel_Shift;
     // End of variables declaration//GEN-END:variables
 }

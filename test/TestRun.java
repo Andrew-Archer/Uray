@@ -1,4 +1,3 @@
-package ru.npptmk.uray_pressure_reg;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -23,13 +22,13 @@ import ru.npptmk.uray_pressure_reg.managers.ShiftManagerImpl;
  *
  * @author RazumnovAA
  */
-public class Run {
+public class TestRun {
 
     private static final Logger LOG = Logger.getLogger("HelloWorld");
 
     public static void main(String[] args) throws InterruptedException, IOException {
         JDialog_SetupIndicator indication = new JDialog_SetupIndicator(null, false);
-        indication.setMaxValueForProgress(2);
+        indication.setMaxValueForProgress(5);
         indication.dropProgress();
         indication.setVisible(true);
         //LogManager.getLogManager().readConfiguration(new FileInputStream("logger.properties"));
@@ -53,11 +52,11 @@ public class Run {
             indication.incremetProgress();
 
             indication.printlnLog("Подключаемся к манометру1");
-            final Manometer manometer1 = new ManometerTestImpl();
+            final Manometer man1 = new ManometerTestImpl();
             indication.incremetProgress();
 
-            indication.printlnLog("Подключаемся к манометру");
-            final Manometer manometer2 = new ManometerTestImpl();
+            indication.printlnLog("Подключаемся к манометру2");
+            final Manometer man2 = new ManometerTestImpl();
             indication.incremetProgress();
 
             indication.printlnLog("Запускаем менеджер смен");
@@ -70,7 +69,11 @@ public class Run {
             indication.setVisible(false);
             /* Create and display the form */
             java.awt.EventQueue.invokeLater(() -> {
-                new JFrame_Main(dbExecutor, manometer1, manometer2, shiftManager)
+                new JFrame_Main(
+                        dbExecutor,
+                        man1,
+                        man2,
+                        shiftManager)
                         .setVisible(true);
             });
         } catch (Exception ex) {

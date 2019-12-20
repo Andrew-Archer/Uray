@@ -32,6 +32,7 @@ public interface ShiftManager {
      * <P>
      * Если текущая смена закрыта, то создает новую и начинает ее.
      *
+     * @param personal
      * @return Начатую смену.
      * @throws Exception связанное с тем что вы пытаетесь начать начатую смену.
      */

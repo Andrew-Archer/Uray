@@ -28,7 +28,7 @@ public class DerbyDBExecutor implements DBExecutor {
     }
 
     @Override
-    public <R> R execRead(Function<EntityManager, R> readLogic) {
+    public synchronized <R> R execRead(Function<EntityManager, R> readLogic) {
         R result = null;
         em = emf.createEntityManager();
         try {
@@ -61,7 +61,7 @@ public class DerbyDBExecutor implements DBExecutor {
     }
 
     @Override
-    public <R> R execWrite(Function<EntityManager, R> writeLogic) {
+    public synchronized <R> R execWrite(Function<EntityManager, R> writeLogic) {
         R result = null;
         em = emf.createEntityManager();
         try {

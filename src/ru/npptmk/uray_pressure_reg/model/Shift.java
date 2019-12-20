@@ -69,7 +69,9 @@ public class Shift implements Serializable {
     }
 
     public void addAllPersonal(Map<String, Operator> personal) {
-        personal.putAll(personal);
+        if (personal != null) {
+            personal.putAll(personal);
+        }
     }
 
     public void removePersonal(String role, Operator operator) {

@@ -18,7 +18,7 @@ public class DAOPipeImpl implements DAOPipe {
     }
 
     @Override
-    public Pipe createNew(Pipe pipe) {
+    public synchronized Pipe createNew(Pipe pipe) {
         return dbExecutor.execWrite((em) -> {
             em.persist(pipe);
             return pipe;
@@ -26,40 +26,40 @@ public class DAOPipeImpl implements DAOPipe {
     }
 
     @Override
-    public List<Pipe> getAll() {
+    public synchronized List<Pipe> getAll() {
         return dbExecutor.execRead((em) -> {
             return em.createNamedQuery("getAllPipes").getResultList();
         });
     }
 
     @Override
-    public List<Pipe> getByDatePeriod(Date start, Date end) {
+    public synchronized List<Pipe> getByDatePeriod(Date start, Date end) {
         return dbExecutor.execRead((em) -> {
             return em.createNamedQuery("getPipesByDatePeriod")
-                    .setParameter(":start", start)
-                    .setParameter(":end", end)
+                    .setParameter("start", start)
+                    .setParameter("end", end)
                     .getResultList();
         });
     }
 
     @Override
-    public Pipe getById(Long id) {
+    public synchronized Pipe getById(Long id) {
         return dbExecutor.execRead((em) -> {
             return em.find(Pipe.class, id);
         });
     }
 
     @Override
-    public List<Pipe> getByShiftId(Shift shift) {
+    public synchronized List<Pipe> getByShiftId(Shift shift) {
         return dbExecutor.execRead((em) -> {
             return em.createNamedQuery("getPipesByShiftId")
-                    .setParameter(":shiftId", shift.getId())
+                    .setParameter("shiftId", shift.getId())
                     .getResultList();
         });
     }
 
     @Override
-    public Pipe reread(Pipe pipe) {
+    public synchronized Pipe reread(Pipe pipe) {
         if (pipe.getId() != null) {
             return null;
         }
@@ -69,7 +69,7 @@ public class DAOPipeImpl implements DAOPipe {
     }
 
     @Override
-    public Pipe update(Pipe pipe) {
+    public synchronized Pipe update(Pipe pipe) {
         return dbExecutor.execWrite((em) -> {
             return em.merge(pipe);
         });
