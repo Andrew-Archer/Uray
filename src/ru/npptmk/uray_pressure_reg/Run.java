@@ -11,6 +11,10 @@ import org.jfree.chart.ChartFactory;
 import org.jfree.chart.StandardChartTheme;
 import ru.npptmk.drivers.manometers.Manometer;
 import ru.npptmk.drivers.manometers.ManometerTestImpl;
+import ru.npptmk.uray_pressure_reg.drivers.DAOPipe;
+import ru.npptmk.uray_pressure_reg.drivers.DAOPipeImpl;
+import ru.npptmk.uray_pressure_reg.drivers.DAOSettingProperty;
+import ru.npptmk.uray_pressure_reg.drivers.DAOSettingPropertyImpl;
 import ru.npptmk.uray_pressure_reg.drivers.DBExecutor;
 import ru.npptmk.uray_pressure_reg.drivers.DerbyDBExecutor;
 import ru.npptmk.uray_pressure_reg.gui.JDialog_SetupIndicator;
@@ -63,6 +67,14 @@ public class Run {
             indication.printlnLog("Запускаем менеджер смен");
             final ShiftManager shiftManager = new ShiftManagerImpl(dbExecutor);
             indication.incremetProgress();
+            
+            indication.printlnLog("Запускаем менеджер смен");
+            final DAOSettingProperty dAOSettingProperty = DAOSettingPropertyImpl.getDAO(dbExecutor);
+            indication.incremetProgress();
+            
+            indication.printlnLog("Запускаем менеджер смен");
+            final DAOPipe dAOPipe = DAOPipeImpl.getDAO(dbExecutor);
+            indication.incremetProgress();
 
             /*indication.printlnLog("Подключаемся к контроллеру");
             final Controller controller = new ControllerS7("localhost", 502);
@@ -70,7 +82,7 @@ public class Run {
             indication.setVisible(false);
             /* Create and display the form */
             java.awt.EventQueue.invokeLater(() -> {
-                new JFrame_Main(dbExecutor, manometer1, manometer2, shiftManager)
+                new JFrame_Main(dbExecutor, manometer1, manometer2, shiftManager, dAOSettingProperty, dAOPipe)
                         .setVisible(true);
             });
         } catch (Exception ex) {

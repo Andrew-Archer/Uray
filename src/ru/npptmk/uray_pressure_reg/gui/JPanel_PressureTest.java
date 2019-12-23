@@ -1,16 +1,80 @@
 package ru.npptmk.uray_pressure_reg.gui;
 
+import java.awt.Color;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
+import ru.npptmk.drivers.manometers.Manometer;
+
 /**
  *
  * @author RazumnovAA
  */
 public class JPanel_PressureTest extends javax.swing.JPanel {
 
+    private final XYSeriesCollection dataset;
+
+    private Manometer manometer;
+
+    /**
+     * Добавляет точку к указанной серии значений , если указанной серии нет, то
+     * она создается.
+     *
+     * @param x значение по оси X.
+     * @param y значение по оси Y.
+     * @param seriesNumber идентификатор серии значений к которой необходимо
+     * добавить точку.
+     */
+    public void addPoint(Number x, Number y, String seriesNumber) {
+        try {
+            dataset.getSeries(seriesNumber).add(x, y);
+        } catch (Exception ex) {
+            XYSeries xySeries = new XYSeries(seriesNumber, false);
+            xySeries.add(x, y);
+            dataset.addSeries(xySeries);
+        }
+    }
+
+    public void setManometer(Manometer manometer) {
+        this.manometer = manometer;
+        manometer.addManometerConnectionStateListener((man, connectionState) -> {
+            if (connectionState) {
+                this.setManometerStateConnected();
+            } else {
+                this.setManometerStateDisconnected();
+            }
+        });
+    }
+
+    /**
+     * Отобразить статус того, что манометр подключен.
+     */
+    public void setManometerStateConnected() {
+        jLabel_ManometerState.setText("ПОДКЛЮЧЕН");
+        jLabel_ManometerState.setBackground(new Color(204, 255, 204));
+    }
+
+    /**
+     * Отобразить статус того, что манометр отключен.
+     */
+    public void setManometerStateDisconnected() {
+        jLabel_ManometerState.setText("ОТКЛЮЧЕН");
+        jLabel_ManometerState.setBackground(new Color(255, 153, 153));
+    }
+
+    /**
+     * Очищает график. удаляя из набора данных все серии значений.
+     */
+    public void clearDataset() {
+        dataset.removeAllSeries();
+    }
+
     /**
      * Creates new form JPanel_PressureTest
      */
     public JPanel_PressureTest() {
         initComponents();
+        dataset = new XYSeriesCollection();
+        chartPanel_RealTimePressureGraph1.setNewDataset(this.dataset);
     }
 
     /**
@@ -25,6 +89,8 @@ public class JPanel_PressureTest extends javax.swing.JPanel {
         chartPanel_RealTimePressureGraph1 = new ru.npptmk.uray_pressure_reg.gui.ChartPanel_RealTimePressureGraph();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
+        jButton1 = new javax.swing.JButton();
+        jLabel_ManometerState = new javax.swing.JLabel();
 
         javax.swing.GroupLayout chartPanel_RealTimePressureGraph1Layout = new javax.swing.GroupLayout(chartPanel_RealTimePressureGraph1);
         chartPanel_RealTimePressureGraph1.setLayout(chartPanel_RealTimePressureGraph1Layout);
@@ -69,49 +135,69 @@ public class JPanel_PressureTest extends javax.swing.JPanel {
             jTable1.getColumnModel().getColumn(0).setMaxWidth(100);
         }
 
+        jButton1.setText("Подключиться к манометру");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
+        jLabel_ManometerState.setBackground(new java.awt.Color(255, 153, 153));
+        jLabel_ManometerState.setText("Подключен");
+        jLabel_ManometerState.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 255)));
+        jLabel_ManometerState.setOpaque(true);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 442, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jButton1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel_ManometerState, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addComponent(chartPanel_RealTimePressureGraph1, javax.swing.GroupLayout.PREFERRED_SIZE, 442, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 164, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 138, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabel_ManometerState, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(chartPanel_RealTimePressureGraph1, javax.swing.GroupLayout.PREFERRED_SIZE, 242, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        manometer.start();
+    }//GEN-LAST:event_jButton1ActionPerformed
+
     public void addPipe(String ID, String position) {
 
     }
-    
-    public void removePipe(String ID, String position){
-        
+
+    public void removePipe(String ID, String position) {
+
     }
-    
-    public void updatePipe(String ID, String position){
-        
+
+    public void updatePipe(String ID, String position) {
+
     }
-    
-    public void clearChart(){
-        chartPanel_RealTimePressureGraph1.clearDataSet();
-    }
-    
-    public void addPoint(Float x, Float y){
-        chartPanel_RealTimePressureGraph1.addPoint();
-    }
+
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private ru.npptmk.uray_pressure_reg.gui.ChartPanel_RealTimePressureGraph chartPanel_RealTimePressureGraph1;
+    private javax.swing.JButton jButton1;
+    private javax.swing.JLabel jLabel_ManometerState;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable jTable1;
     // End of variables declaration//GEN-END:variables

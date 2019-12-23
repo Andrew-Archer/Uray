@@ -40,9 +40,17 @@ public class DAOSettingPropertyImpl implements DAOSettingProperty {
     @Override
     public synchronized List<SettingProperty> getByName(String name) {
         return dbExecutor.execRead((em) -> {
-            return em.createNamedQuery("getPropertyByName")
+            List<SettingProperty> propertyValues = em.createNamedQuery("getPropertyByName")
                     .setParameter("name", name)
                     .getResultList();
+            if (propertyValues.isEmpty()) {
+                SettingProperty sp = new SettingProperty();
+                sp.setName(name);
+                sp.setVal("");
+                sp.setValDefault("");
+                propertyValues.add(sp);
+            }
+            return propertyValues;
         });
     }
 

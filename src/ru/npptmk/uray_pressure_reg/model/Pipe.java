@@ -2,7 +2,6 @@ package ru.npptmk.uray_pressure_reg.model;
 
 import java.io.Serializable;
 import java.util.Date;
-import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
@@ -25,6 +24,8 @@ import javax.persistence.TemporalType;
     @NamedQuery(name = "getPipesByDatePeriod", query = "SELECT a FROM Pipe a WHERE a.testDate BETWEEN :start AND :end")
     ,
     @NamedQuery(name = "getPipesByShiftId", query = "SELECT a FROM Pipe a WHERE a.shiftId = :siftId")
+        ,
+    @NamedQuery(name = "getPipesByLocationID", query = "SELECT a FROM Pipe a WHERE a.LocationID = :locationID")
 })
 public class Pipe implements Serializable {
 
@@ -33,34 +34,31 @@ public class Pipe implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     @ElementCollection
-    @Column(name = "X_GRAPH")
-    private List<Float> xGraph;
-    @ElementCollection
-    @Column(name = "Y_GRAPH")
-    private List<Float> yGraph;
+    @Column(name="TEST_GRAPHS_ID")
+    Long graphsId;    
     @Column(name = "TARGET_PRESSURE")
     private Float targetPressure;
     @Column(name = "SHIFT_ID")
     private Long shiftId;
     private int LocationID;
+
+    public int getLocationID() {
+        return LocationID;
+    }
+
+    public void setLocationID(int LocationID) {
+        this.LocationID = LocationID;
+    }
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "TEST_DATE")
     private Date testDate;
 
-    public List<Float> getxGraph() {
-        return xGraph;
+    public Date getTestDate() {
+        return testDate;
     }
 
-    public void setxGraph(List<Float> xGraph) {
-        this.xGraph = xGraph;
-    }
-
-    public List<Float> getyGraph() {
-        return yGraph;
-    }
-
-    public void setyGraph(List<Float> yGraph) {
-        this.yGraph = yGraph;
+    public void setTestDate(Date testDate) {
+        this.testDate = testDate;
     }
 
     public Float getTargetPressure() {

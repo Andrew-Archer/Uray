@@ -50,6 +50,15 @@ public class DAOPipeImpl implements DAOPipe {
     }
 
     @Override
+    public List<Pipe> getByLocationID(int locationID) {
+        return dbExecutor.execRead((em) -> {
+            return em.createNamedQuery("getPipesByLocationID")
+                    .setParameter("locationId", locationID)
+                    .getResultList();
+        });
+    }
+
+    @Override
     public synchronized List<Pipe> getByShiftId(Shift shift) {
         return dbExecutor.execRead((em) -> {
             return em.createNamedQuery("getPipesByShiftId")

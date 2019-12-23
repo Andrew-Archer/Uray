@@ -1,4 +1,4 @@
-Fri Dec 20 16:26:45 SAMT 2019 : DRDA_ListenPort.S, <1527>, <0.0.0.0>, <java.net.SocketException: Unrecognized Windows Sockets error: 0: JVM_Bind>
+Mon Dec 23 14:46:19 SAMT 2019 : DRDA_ListenPort.S, <1527>, <0.0.0.0>, <java.net.SocketException: Unrecognized Windows Sockets error: 0: JVM_Bind>
 Сгенерировано исключение при запуске сетевого сервера. DRDA_ListenPort.S:DRDA_ListenPort.S, <1527>, <0.0.0.0>, <java.net.SocketException: Unrecognized Windows Sockets error: 0: JVM_Bind>
 java.lang.reflect.InvocationTargetException
 	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)

@@ -22,6 +22,15 @@ public interface DAOPipe {
     public List<Pipe> getAll();
 
     /**
+     * Вернуть список всех труб находящихся в указанной локации.
+     *
+     * @param locationID идентификатор локации в которой ищем трубы.
+     * @return список труб в указанной локации или пустой список, если ничего не
+     * найдено.
+     */
+    public List<Pipe> getByLocationID(int locationID);
+
+    /**
      * Получить список труб принадлежащих заданной смене.
      *
      * @param shift заданная смена
@@ -56,8 +65,8 @@ public interface DAOPipe {
      * найдено.
      */
     public Pipe reread(Pipe pipe);
-    
+
     public Pipe createNew(Pipe pipe);
-    
+
     public Pipe update(Pipe pipe);
 }
