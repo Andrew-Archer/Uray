@@ -923,7 +923,7 @@ is divided into following sections:
         <mkdir dir="${build.classes.dir}"/>
     </target>
     <target name="-pre-compile">
-        <copy file="logger.properties" todir="${dist.dir}"></copy>
+        <copy file="config.properties" todir="${dist.dir}"></copy>
     </target>
     <target if="do.depend.true" name="-compile-depend">
         <pathconvert property="build.generated.subdirs">

@@ -1,6 +1,7 @@
 package ru.npptmk.uray_pressure_reg.model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.persistence.Column;
@@ -19,7 +20,13 @@ import javax.persistence.TemporalType;
  * @author RazumnovAA
  */
 @Entity
-public class PressGraph implements Serializable {
+public class Graph implements Serializable {
+
+    public Graph() {
+        this.testDate = new Date();
+        xGraph = new ArrayList<>();
+        yGraph = new ArrayList<>();
+    }
 
     private static final long serialVersionUID = 1L;
     @Id
@@ -28,7 +35,7 @@ public class PressGraph implements Serializable {
     @ElementCollection
     @Column(name = "X_GRAPH")
     private List<Float> xGraph;
-    @Column(name="TEST_DATE")
+    @Column(name = "TEST_DATE")
     @Temporal(TemporalType.TIMESTAMP)
     private Date testDate;
 
@@ -82,10 +89,10 @@ public class PressGraph implements Serializable {
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof PressGraph)) {
+        if (!(object instanceof Graph)) {
             return false;
         }
-        PressGraph other = (PressGraph) object;
+        Graph other = (Graph) object;
         if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }

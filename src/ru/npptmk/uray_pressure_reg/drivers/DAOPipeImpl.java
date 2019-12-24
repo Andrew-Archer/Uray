@@ -3,6 +3,7 @@ package ru.npptmk.uray_pressure_reg.drivers;
 import java.util.Date;
 import java.util.List;
 import ru.npptmk.uray_pressure_reg.model.Pipe;
+import ru.npptmk.uray_pressure_reg.model.Pipe.Locations;
 import ru.npptmk.uray_pressure_reg.model.Shift;
 
 public class DAOPipeImpl implements DAOPipe {
@@ -50,10 +51,10 @@ public class DAOPipeImpl implements DAOPipe {
     }
 
     @Override
-    public List<Pipe> getByLocationID(int locationID) {
+    public List<Pipe> getByLocationID(Locations location) {
         return dbExecutor.execRead((em) -> {
-            return em.createNamedQuery("getPipesByLocationID")
-                    .setParameter("locationId", locationID)
+            return em.createNamedQuery("getPipesByLocation")
+                    .setParameter("location", location)
                     .getResultList();
         });
     }

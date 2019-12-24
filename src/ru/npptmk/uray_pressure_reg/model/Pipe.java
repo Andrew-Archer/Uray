@@ -1,15 +1,20 @@
 package ru.npptmk.uray_pressure_reg.model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
-import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
@@ -24,30 +29,58 @@ import javax.persistence.TemporalType;
     @NamedQuery(name = "getPipesByDatePeriod", query = "SELECT a FROM Pipe a WHERE a.testDate BETWEEN :start AND :end")
     ,
     @NamedQuery(name = "getPipesByShiftId", query = "SELECT a FROM Pipe a WHERE a.shiftId = :siftId")
-        ,
-    @NamedQuery(name = "getPipesByLocationID", query = "SELECT a FROM Pipe a WHERE a.LocationID = :locationID")
+    ,
+    @NamedQuery(name = "getPipesByLocation", query = "SELECT a FROM Pipe a WHERE a.location = :location")
 })
 public class Pipe implements Serializable {
+
+    public static enum Locations {
+        PRESS_TEST_1,
+        PRESS_TEST_2,
+        OUT_1,
+        OU2_2
+    }
+
+    public Pipe() {
+        this.graphs = new ArrayList<>();
+    }
 
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    @ElementCollection
-    @Column(name="TEST_GRAPHS_ID")
-    Long graphsId;    
+    @OneToMany(cascade = CascadeType.ALL)
+    private final List<Graph> graphs;
+
+    /**
+     * Возвращает последний график или null если еще ни одного графика нет.
+     *
+     * @return последний добавленный в список график.
+     */
+    public Graph getLastGraph() {
+        if (graphs.isEmpty()) {
+            return null;
+        }
+        return graphs.get(graphs.size() - 1);
+    }
+
+    public List<Graph> getGraphs() {
+        return graphs;
+    }
+
     @Column(name = "TARGET_PRESSURE")
     private Float targetPressure;
     @Column(name = "SHIFT_ID")
     private Long shiftId;
-    private int LocationID;
+    @Enumerated(EnumType.STRING)
+    private Locations location;
 
-    public int getLocationID() {
-        return LocationID;
+    public Locations getLocationID() {
+        return location;
     }
 
-    public void setLocationID(int LocationID) {
-        this.LocationID = LocationID;
+    public void setLocationID(Locations location) {
+        this.location = location;
     }
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "TEST_DATE")

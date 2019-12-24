@@ -9,7 +9,11 @@ import org.apache.derby.drda.NetworkServerControl;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.StandardChartTheme;
 import ru.npptmk.drivers.manometers.Manometer;
-import ru.npptmk.drivers.manometers.ManometerTestImpl;
+import ru.npptmk.drivers.manometers.ManometerEmul;
+import ru.npptmk.uray_pressure_reg.drivers.DAOPipe;
+import ru.npptmk.uray_pressure_reg.drivers.DAOPipeImpl;
+import ru.npptmk.uray_pressure_reg.drivers.DAOSettingProperty;
+import ru.npptmk.uray_pressure_reg.drivers.DAOSettingPropertyImpl;
 import ru.npptmk.uray_pressure_reg.drivers.DBExecutor;
 import ru.npptmk.uray_pressure_reg.drivers.DerbyDBExecutor;
 import ru.npptmk.uray_pressure_reg.gui.JDialog_SetupIndicator;
@@ -52,15 +56,23 @@ public class TestRun {
             indication.incremetProgress();
 
             indication.printlnLog("Подключаемся к манометру1");
-            final Manometer man1 = new ManometerTestImpl();
+            final Manometer man1 = new ManometerEmul();
             indication.incremetProgress();
 
             indication.printlnLog("Подключаемся к манометру2");
-            final Manometer man2 = new ManometerTestImpl();
+            final Manometer man2 = new ManometerEmul();
             indication.incremetProgress();
 
             indication.printlnLog("Запускаем менеджер смен");
             final ShiftManager shiftManager = new ShiftManagerImpl(dbExecutor);
+            indication.incremetProgress();
+            
+            indication.printlnLog("Запускаем менеджер смен");
+            final DAOSettingProperty dAOSettingProperty = DAOSettingPropertyImpl.getDAO(dbExecutor);
+            indication.incremetProgress();
+
+            indication.printlnLog("Запускаем менеджер смен");
+            final DAOPipe dAOPipe = DAOPipeImpl.getDAO(dbExecutor);
             indication.incremetProgress();
 
             /*indication.printlnLog("Подключаемся к контроллеру");
@@ -73,7 +85,9 @@ public class TestRun {
                         dbExecutor,
                         man1,
                         man2,
-                        shiftManager)
+                        shiftManager,
+                        dAOSettingProperty,
+                        dAOPipe)
                         .setVisible(true);
             });
         } catch (Exception ex) {

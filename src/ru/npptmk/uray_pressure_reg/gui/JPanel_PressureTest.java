@@ -1,6 +1,8 @@
 package ru.npptmk.uray_pressure_reg.gui;
 
 import java.awt.Color;
+import java.awt.EventQueue;
+import javax.swing.table.DefaultTableModel;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import ru.npptmk.drivers.manometers.Manometer;
@@ -105,35 +107,21 @@ public class JPanel_PressureTest extends javax.swing.JPanel {
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null},
-                {null, null, null},
-                {null, null, null},
-                {null, null, null}
+
             },
             new String [] {
-                "№", "ID", "Позиция"
+                "N", "ID", "Позиция"
             }
         ) {
             Class[] types = new Class [] {
                 java.lang.String.class, java.lang.String.class, java.lang.String.class
             };
-            boolean[] canEdit = new boolean [] {
-                false, false, false
-            };
 
             public Class getColumnClass(int columnIndex) {
                 return types [columnIndex];
             }
-
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return canEdit [columnIndex];
-            }
         });
         jScrollPane1.setViewportView(jTable1);
-        if (jTable1.getColumnModel().getColumnCount() > 0) {
-            jTable1.getColumnModel().getColumn(0).setPreferredWidth(50);
-            jTable1.getColumnModel().getColumn(0).setMaxWidth(100);
-        }
 
         jButton1.setText("Подключиться к манометру");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
@@ -153,12 +141,12 @@ public class JPanel_PressureTest extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 442, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jButton1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel_ManometerState, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(jLabel_ManometerState, javax.swing.GroupLayout.PREFERRED_SIZE, 225, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(chartPanel_RealTimePressureGraph1, javax.swing.GroupLayout.PREFERRED_SIZE, 442, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
@@ -181,16 +169,52 @@ public class JPanel_PressureTest extends javax.swing.JPanel {
         manometer.start();
     }//GEN-LAST:event_jButton1ActionPerformed
 
-    public void addPipe(String ID, String position) {
+    /**
+     * Добавляет строчку в список труб.
+     *
+     * @param id идентификатор трубы
+     * @param position позиция трубы.-
+     */
+    public void addPipe(String id, String position) {
+        EventQueue.invokeLater(() -> {
+            ((DefaultTableModel) jTable1.getModel()).addRow(
+                    new Object[]{
+                        Integer.toString(jTable1.getRowCount() + 1),
+                        id,
+                        position
+                    });
+        });
 
     }
 
-    public void removePipe(String ID, String position) {
-
+    /**
+     * Ищет в списке трубу по идентификатору и удаляет ее, если находит.
+     *
+     * @param id идентификатор трубы.
+     */
+    public void removePipe(String id) {
+        DefaultTableModel defaultTableModel = ((DefaultTableModel) jTable1.getModel());
+        if (defaultTableModel.getRowCount() != 0) {
+            for (int i = 0; i < defaultTableModel.getRowCount(); i++) {
+                //Обновляем номер строки
+                defaultTableModel.setValueAt(i, i, 0);
+                if (defaultTableModel.getValueAt(i, 1).equals(id)) {
+                    defaultTableModel.removeRow(i);
+                    i--;
+                }
+            }
+        }
     }
 
-    public void updatePipe(String ID, String position) {
-
+    public void updatePipe(String id, String position) {
+        DefaultTableModel defaultTableModel = ((DefaultTableModel) jTable1.getModel());
+        if (defaultTableModel.getRowCount() != 0) {
+            for (int i = 0; i < defaultTableModel.getRowCount(); i++) {
+                if (defaultTableModel.getValueAt(i, 1).equals(id)) {
+                    defaultTableModel.setValueAt(position, i, 2);
+                }
+            }
+        }
     }
 
 

@@ -1,16 +1,19 @@
 package ru.npptmk.uray_pressure_reg;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.InetAddress;
+import java.nio.file.Paths;
+import java.util.Properties;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import static javax.swing.JOptionPane.ERROR_MESSAGE;
 import org.apache.derby.drda.NetworkServerControl;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.StandardChartTheme;
+import ru.npptmk.drivers.manometers.DriverForDM5002M;
 import ru.npptmk.drivers.manometers.Manometer;
-import ru.npptmk.drivers.manometers.ManometerTestImpl;
 import ru.npptmk.uray_pressure_reg.drivers.DAOPipe;
 import ru.npptmk.uray_pressure_reg.drivers.DAOPipeImpl;
 import ru.npptmk.uray_pressure_reg.drivers.DAOSettingProperty;
@@ -28,10 +31,19 @@ import ru.npptmk.uray_pressure_reg.managers.ShiftManagerImpl;
  * @author RazumnovAA
  */
 public class Run {
+    
 
     private static final Logger LOG = Logger.getLogger("HelloWorld");
 
     public static void main(String[] args) throws InterruptedException, IOException {
+       Properties properties = null;
+         try (FileInputStream fis = new FileInputStream("config.properties");) {
+            properties.load(fis);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(null, "Файл конфигурации не найден по пути " + (Paths.get("config.properties")).toAbsolutePath().normalize() + ". Приложение будет закрыто.", "Ошибка", ERROR_MESSAGE);
+            ex.printStackTrace();
+            System.exit(1);
+        }
         JDialog_SetupIndicator indication = new JDialog_SetupIndicator(null, false);
         indication.setMaxValueForProgress(2);
         indication.dropProgress();
@@ -57,21 +69,21 @@ public class Run {
             indication.incremetProgress();
 
             indication.printlnLog("Подключаемся к манометру1");
-            final Manometer manometer1 = new ManometerTestImpl();
+            final Manometer manometer1 = new DriverForDM5002M(properties.getProperty("manometers.man1.port", "/dev/ttyS2"));
             indication.incremetProgress();
 
             indication.printlnLog("Подключаемся к манометру");
-            final Manometer manometer2 = new ManometerTestImpl();
+            final Manometer manometer2 = new DriverForDM5002M(properties.getProperty("manometers.man2.port", "/dev/ttyS4"));
             indication.incremetProgress();
 
             indication.printlnLog("Запускаем менеджер смен");
             final ShiftManager shiftManager = new ShiftManagerImpl(dbExecutor);
             indication.incremetProgress();
-            
+
             indication.printlnLog("Запускаем менеджер смен");
             final DAOSettingProperty dAOSettingProperty = DAOSettingPropertyImpl.getDAO(dbExecutor);
             indication.incremetProgress();
-            
+
             indication.printlnLog("Запускаем менеджер смен");
             final DAOPipe dAOPipe = DAOPipeImpl.getDAO(dbExecutor);
             indication.incremetProgress();
@@ -82,8 +94,14 @@ public class Run {
             indication.setVisible(false);
             /* Create and display the form */
             java.awt.EventQueue.invokeLater(() -> {
-                new JFrame_Main(dbExecutor, manometer1, manometer2, shiftManager, dAOSettingProperty, dAOPipe)
-                        .setVisible(true);
+                new JFrame_Main(
+                        dbExecutor,
+                        manometer1,
+                        manometer2,
+                        shiftManager,
+                        dAOSettingProperty,
+                        dAOPipe
+                ).setVisible(true);
             });
         } catch (Exception ex) {
             indication.setVisible(false);

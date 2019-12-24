@@ -11,7 +11,7 @@
     <class>ru.npptmk.uray_pressure_reg.model.PlcIn</class>
     <class>ru.npptmk.uray_pressure_reg.model.SettingProperty</class>
     <class>ru.npptmk.uray_pressure_reg.model.MBDataPiece</class>
-    <class>ru.npptmk.uray_pressure_reg.model.PressGraph</class>
+    <class>ru.npptmk.uray_pressure_reg.model.Graph</class>
     <properties>
       <property name="javax.persistence.jdbc.url" value="jdbc:derby://localhost:1527/RegistrationDB"/>
       <property name="javax.persistence.jdbc.user" value="tmk"/>

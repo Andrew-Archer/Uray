@@ -1,6 +1,7 @@
 package ru.npptmk.uray_pressure_reg.gui;
 
 import java.awt.EventQueue;
+import java.util.Date;
 import java.util.List;
 import javax.swing.JOptionPane;
 import static javax.swing.JOptionPane.ERROR_MESSAGE;
@@ -10,7 +11,9 @@ import ru.npptmk.uray_pressure_reg.drivers.DAOSettingProperty;
 import ru.npptmk.uray_pressure_reg.drivers.DBExecutor;
 import ru.npptmk.uray_pressure_reg.managers.ShiftManager;
 import ru.npptmk.uray_pressure_reg.managers.ShiftManagerListener;
+import ru.npptmk.uray_pressure_reg.model.Graph;
 import ru.npptmk.uray_pressure_reg.model.Pipe;
+import ru.npptmk.uray_pressure_reg.model.Pipe.Locations;
 import ru.npptmk.uray_pressure_reg.model.Shift;
 import ru.npptmk.uray_pressure_reg.model.ShiftState;
 
@@ -25,13 +28,15 @@ public class JFrame_Main extends javax.swing.JFrame
     private final DAOPipe dAOPipe;
 
     private final DAOSettingProperty dAOSettingProperty;
+    private Pipe currentPress1Pipe;
+    private Pipe currentPress2Pipe;
 
     private final DBExecutor dbExecutor;
     private final Manometer man1;
     private final Manometer man2;
     private final ShiftManager shiftManager;
-    private int pressureTest1State;
-    private int pressureTest2State;
+    private Integer pressureTest1State = 0;
+    private Integer pressureTest2State = 0;
     private float pressureToDetectTube;
 
     /**
@@ -59,17 +64,17 @@ public class JFrame_Main extends javax.swing.JFrame
         this.shiftManager = shiftManager;
         shiftManager.addListener(this);
         this.man1 = man1;
-        jPanel_PressureTest2.setManometer(man1);
+        jPanel_PressureTest1.setManometer(man1);
         man1.addListener((man, prevValue, currentValue, milliSeconds) -> {
             EventQueue.invokeLater(() -> {
-                jPanel_PressureTest2.addPoint(milliSeconds, currentValue, man.toString());
+                jPanel_PressureTest1.addPoint(milliSeconds / 1000f, currentValue, "One");
             });
         });
         this.man2 = man2;
-        jPanel_PressureTest3.setManometer(man2);
+        jPanel_PressureTest2.setManometer(man2);
         man2.addListener((man, prevValue, currentValue, milliSeconds) -> {
             EventQueue.invokeLater(() -> {
-                jPanel_PressureTest3.addPoint(milliSeconds, currentValue, man.toString());
+                jPanel_PressureTest2.addPoint(milliSeconds / 1000f, currentValue, "Two");
             });
         });
         try {
@@ -77,76 +82,91 @@ public class JFrame_Main extends javax.swing.JFrame
         } catch (Exception ex) {
             pressureToDetectTube = 0;
         }
-        man1.addListener(this::doOnPressureValueChanged1);
+        man1.addListener(this::doOnPressureValueChanged);
+        man1.setName("man1");
         man1.start();
-        man2.addListener(this::doOnPressureValueChanged2);
+        man2.addListener(this::doOnPressureValueChanged);
+        man2.setName("man2");
         man2.start();
     }
+    
+    private void loadPreviousResults(){
+    }
 
-    public void doOnPressureValueChanged1(Manometer man, Float prevValue, Float currentValue, Long milliSeconds) {
+    public void doOnPressureValueChanged(Manometer man, Float prevValue, Float currentValue, Long milliSeconds) {
+        Pipe currentPipe;
+        JPanel_PressureTest currentPanel;
+        Integer currentPressState;
+        Locations currentLocation;
+        switch (man.getName()) {
+            case "man1":
+                currentPipe = currentPress1Pipe;
+                currentPanel = jPanel_PressureTest1;
+                currentPressState = pressureTest1State;
+                currentLocation = Locations.PRESS_TEST_1;
+                break;
+            default:
+                currentPipe = currentPress2Pipe;
+                currentPanel = jPanel_PressureTest2;
+                currentPressState = pressureTest1State;
+                currentLocation = Locations.PRESS_TEST_2;
+        }
         //Если давление на опрессовке превысило давление регистрации
-        if (currentValue > pressureToDetectTube) {
+        if (currentValue >= pressureToDetectTube) {
             //Если текущий этап работы регистратора оджидание опрессовки
-            if (pressureTest1State == 0) {
+            if (currentPressState == 0) {
                 //Очищаем график
-                jPanel_PressureTest2.clearDataset();
+                currentPanel.clearDataset();
                 //Если по системе учета на опрессовке есть труба
-                List<Pipe> pipesOnPressTest = dAOPipe.getByLocationID(0);
-                if(!pipesOnPressTest.isEmpty()){
-                //Добавляем новый график
-                pipesOnPressTest.get(0).
-                //Записываем точку графика на в трубу
-                //Отрисовываем точку на графике
-                //Меняем этап работы на выполение регистрации
-                
+                List<Pipe> pipesOnPressTest = dAOPipe.getByLocationID(currentLocation);
+                if (!pipesOnPressTest.isEmpty()) {
+                    //Добавляем новый график
+                    currentPipe = pipesOnPressTest.get(pipesOnPressTest.size() - 1);
+                    currentPipe.getGraphs().add(new Graph());
                 } else { //Если по системе учета на опресоовке трубы нет
                     //Создать трубу на опрессовке
-                    //Записать в нее точку графика
-                    //Отрисовываем точку на графике
+                    currentPipe = new Pipe();
+                    currentPipe.setShiftId(shiftManager.getShift().getId());
+                    //Помещаем трубу на опрессовку
+                    currentPipe.setLocationID(currentLocation);
+                    //Создаем график
+                    currentPipe.getGraphs().add(new Graph());
+                    currentPipe = dAOPipe.createNew(currentPipe);
+                    //Добавляем трубу в таблицу
+                    currentPanel.addPipe(currentPipe.getId().toString(), currentLocation.toString());
                 }
                 //Меняем этап работы на выполение регистрации
-            }else{//Если текущий этап выполнение регистрации
-                
+                currentPressState = 1;
+            } else {//Если текущий этап выполнение регистрации
+
             }
+            //Записываем точку графика на в трубу
+            currentPipe.getLastGraph().addPoint(milliSeconds / 1000f, currentValue);
         } else {//Если давление ниже давления регистрации
             //Если текущий этап региистрация
-            if(){
+            if (currentPressState == 1) {
                 //Записываем точку на ргафик и в трубу
+                currentPipe.getLastGraph().addPoint(milliSeconds / 1000f, currentValue);
                 //Записываем время испытания
+                currentPipe.setTestDate(new Date());
                 //Сохраняем в базу данных
+                currentPipe = dAOPipe.update(currentPipe);
                 //Меняем статус на ожидание регистрации
+                currentPressState = 0;
+            } else {//Если текущий этап ожидание регистрации
+                //Ничего делать не надо, все ок.
             }
         }
-    }
-    public void doOnPressureValueChanged2(Manometer man, Float prevValue, Float currentValue, Long milliSeconds) {
-        //Если давление на опрессовке превысило давление регистрации
-        if (currentValue > pressureToDetectTube) {
-            //Если текущий этап работы регистратора оджидание опрессовки
-            //Очищаем график
-            if () {
-                //Если по системе учета на опрессовке есть труба
-                //Добавляем новый график
-                //Записываем точку графика на в трубу
-                //Отрисовываем точку на графике
-                //Меняем этап работы на выполение регистрации
-                if () {
-                } else { //Если по системе учета на опресоовке трубы нет
-                    //Создать трубу на опрессовке
-                    //Записать в нее точку графика
-                    //Отрисовываем точку на графике
-                }
-                //Меняем этап работы на выполение регистрации
-            }else{//Если текущий этап выполнение регистрации
-                
-            }
-        } else {//Если давление ниже давления регистрации
-            //Если текущий этап региистрация
-            if(){
-                //Записываем точку на ргафик и в трубу
-                //Записываем время испытания
-                //Сохраняем в базу данных
-                //Меняем статус на ожидание регистрации
-            }
+        switch (man.getName()) {
+            case "man1":
+                currentPress1Pipe = currentPipe;
+                jPanel_PressureTest1 = currentPanel;
+                pressureTest1State = currentPressState;
+                break;
+            default:
+                currentPress2Pipe = currentPipe;
+                jPanel_PressureTest2 = currentPanel;
+                pressureTest1State = currentPressState;
         }
     }
 
@@ -172,10 +192,8 @@ public class JFrame_Main extends javax.swing.JFrame
         jPanel_Shift = new javax.swing.JPanel();
         jLabel_ShiftState = new javax.swing.JLabel();
         jButton_SwitchShiftState = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
-        jButton1 = new javax.swing.JButton();
+        jPanel_PressureTest1 = new ru.npptmk.uray_pressure_reg.gui.JPanel_PressureTest();
         jPanel_PressureTest2 = new ru.npptmk.uray_pressure_reg.gui.JPanel_PressureTest();
-        jPanel_PressureTest3 = new ru.npptmk.uray_pressure_reg.gui.JPanel_PressureTest();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -209,36 +227,17 @@ public class JFrame_Main extends javax.swing.JFrame
             .addComponent(jLabel_ShiftState, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
-        jButton2.setText("CLearChart");
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
-            }
-        });
-
-        jButton1.setText("PrintChart");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
-            }
-        });
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jButton1)
-                .addGap(708, 708, 708))
-            .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jPanel_Shift, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jPanel_PressureTest2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jPanel_PressureTest1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jPanel_PressureTest3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(jPanel_PressureTest2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(18, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -247,16 +246,9 @@ public class JFrame_Main extends javax.swing.JFrame
                 .addComponent(jPanel_Shift, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel_PressureTest3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jPanel_PressureTest2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(0, 12, Short.MAX_VALUE)
-                        .addComponent(jButton1))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jButton2)
-                        .addGap(0, 0, Short.MAX_VALUE))))
+                    .addComponent(jPanel_PressureTest2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jPanel_PressureTest1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(56, Short.MAX_VALUE))
         );
 
         pack();
@@ -278,45 +270,11 @@ public class JFrame_Main extends javax.swing.JFrame
         }
     }//GEN-LAST:event_jButton_SwitchShiftStateActionPerformed
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        EventQueue.invokeLater(() -> {
-            double x;
-            double y;
-            double y2;
-            for (int i = 0; i < 100; i++) {
-                x = i;
-                y = Math.pow(x, 4) + 10000;
-
-                jPanel_PressureTest2.addPoint(x, y, "Test");
-
-            }
-            for (int i = 0; i < 100; i++) {
-                x = i;
-
-                y2 = Math.pow(x, 4);
-
-                jPanel_PressureTest2.addPoint(x, y2, "Test1");
-            }
-
-        });
-
-    }//GEN-LAST:event_jButton1ActionPerformed
-
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        EventQueue.invokeLater(() -> {
-
-            jPanel_PressureTest2.clearDataset();
-
-        });
-    }//GEN-LAST:event_jButton2ActionPerformed
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton_SwitchShiftState;
     private javax.swing.JLabel jLabel_ShiftState;
+    private ru.npptmk.uray_pressure_reg.gui.JPanel_PressureTest jPanel_PressureTest1;
     private ru.npptmk.uray_pressure_reg.gui.JPanel_PressureTest jPanel_PressureTest2;
-    private ru.npptmk.uray_pressure_reg.gui.JPanel_PressureTest jPanel_PressureTest3;
     private javax.swing.JPanel jPanel_Shift;
     // End of variables declaration//GEN-END:variables
 }
